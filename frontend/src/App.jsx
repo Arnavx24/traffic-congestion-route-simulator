@@ -6,6 +6,7 @@ function App() {
   const [source, setSource] = useState("A");
   const [destination, setDestination] = useState("D");
   const [route, setRoute] = useState([]);
+  const [algorithm, setAlgorithm] = useState("BFS");
 
   const findRoute = () => {
     const result = bfs(graph, source, destination);
@@ -52,9 +53,35 @@ function App() {
 
       <br />
 
+      <div>
+        <label>Algorithm: </label>
+
+        <select
+          value={algorithm}
+          onChange={(e) => setAlgorithm(e.target.value)}
+        >
+          <option>BFS</option>
+          <option>Dijkstra</option>
+          <option>A*</option>
+        </select>
+      </div>
+
+      <br />
+
       <button onClick={findRoute}>
         Find Route
       </button>
+
+      <hr />
+
+      <h3>Selected Algorithm</h3>
+      <p>{algorithm}</p>
+
+      <h3>Source</h3>
+      <p>{source}</p>
+
+      <h3>Destination</h3>
+      <p>{destination}</p>
 
       <h3>Calculated Route</h3>
 
