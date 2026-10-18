@@ -1,17 +1,34 @@
 import { useState } from "react";
 import { graph } from "./graph/graphData";
 import { bfs } from "./algorithms/bfs";
+import { dijkstra } from "./algorithms/dijkstra";
 
 function App() {
   const [source, setSource] = useState("A");
   const [destination, setDestination] = useState("D");
   const [route, setRoute] = useState([]);
   const [algorithm, setAlgorithm] = useState("BFS");
+  const [cost, setCost] = useState(null);
 
   const findRoute = () => {
+  if (algorithm === "BFS") {
     const result = bfs(graph, source, destination);
+
     setRoute(result);
-  };
+    setCost("Not Applicable");
+  }
+
+  if (algorithm === "Dijkstra") {
+    const result = dijkstra(
+      graph,
+      source,
+      destination
+    );
+
+    setRoute(result.path);
+    setCost(result.cost);
+  }
+};
 
   return (
     <>
@@ -90,6 +107,9 @@ function App() {
           ? route.join(" → ")
           : "Select nodes and click Find Route"}
       </p>
+          <h3>Total Cost</h3>
+
+<p>{cost}</p>
 
       <hr />
 
