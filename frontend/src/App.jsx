@@ -2,33 +2,49 @@ import { useState } from "react";
 import { graph } from "./graph/graphData";
 import { bfs } from "./algorithms/bfs";
 import { dijkstra } from "./algorithms/dijkstra";
+import { applyTraffic } from "./utils/applyTraffic";
 
 function App() {
   const [source, setSource] = useState("A");
   const [destination, setDestination] = useState("D");
   const [route, setRoute] = useState([]);
   const [algorithm, setAlgorithm] = useState("BFS");
+  const [traffic, setTraffic] = useState("Normal");
   const [cost, setCost] = useState(null);
 
   const findRoute = () => {
-  if (algorithm === "BFS") {
-    const result = bfs(graph, source, destination);
-
-    setRoute(result);
-    setCost("Not Applicable");
-  }
-
-  if (algorithm === "Dijkstra") {
-    const result = dijkstra(
+    const updatedGraph = applyTraffic(
       graph,
-      source,
-      destination
+      traffic
     );
 
-    setRoute(result.path);
-    setCost(result.cost);
-  }
-};
+    if (algorithm === "BFS") {
+      const result = bfs(
+        updatedGraph,
+        source,
+        destination
+      );
+
+      setRoute(result);
+      setCost("Based on hop count");
+    }
+
+    if (algorithm === "Dijkstra") {
+      const result = dijkstra(
+        updatedGraph,
+        source,
+        destination
+      );
+
+      setRoute(result.path);
+      setCost(result.cost);
+    }
+
+    if (algorithm === "A*") {
+      setRoute([]);
+      setCost("Implementation in progress");
+    }
+  };
 
   return (
     <>
@@ -44,7 +60,10 @@ function App() {
           onChange={(e) => setSource(e.target.value)}
         >
           {Object.keys(graph).map((node) => (
-            <option key={node} value={node}>
+            <option
+              key={node}
+              value={node}
+            >
               {node}
             </option>
           ))}
@@ -58,10 +77,15 @@ function App() {
 
         <select
           value={destination}
-          onChange={(e) => setDestination(e.target.value)}
+          onChange={(e) =>
+            setDestination(e.target.value)
+          }
         >
           {Object.keys(graph).map((node) => (
-            <option key={node} value={node}>
+            <option
+              key={node}
+              value={node}
+            >
               {node}
             </option>
           ))}
@@ -75,11 +99,30 @@ function App() {
 
         <select
           value={algorithm}
-          onChange={(e) => setAlgorithm(e.target.value)}
+          onChange={(e) =>
+            setAlgorithm(e.target.value)
+          }
         >
           <option>BFS</option>
           <option>Dijkstra</option>
           <option>A*</option>
+        </select>
+      </div>
+
+      <br />
+
+      <div>
+        <label>Traffic Level: </label>
+
+        <select
+          value={traffic}
+          onChange={(e) =>
+            setTraffic(e.target.value)
+          }
+        >
+          <option>Normal</option>
+          <option>Medium</option>
+          <option>Heavy</option>
         </select>
       </div>
 
@@ -94,6 +137,9 @@ function App() {
       <h3>Selected Algorithm</h3>
       <p>{algorithm}</p>
 
+      <h3>Traffic Condition</h3>
+      <p>{traffic}</p>
+
       <h3>Source</h3>
       <p>{source}</p>
 
@@ -101,32 +147,33 @@ function App() {
       <p>{destination}</p>
 
       <h3>Calculated Route</h3>
-
       <p>
         {route.length > 0
           ? route.join(" → ")
           : "Select nodes and click Find Route"}
       </p>
-          <h3>Total Cost</h3>
 
-<p>{cost}</p>
+      <h3>Total Cost</h3>
+      <p>{cost}</p>
 
       <hr />
 
       <h2>Road Connections</h2>
 
       <ul>
-        {Object.entries(graph).map(([node, neighbors]) => (
-          <li key={node}>
-            {node} →{" "}
-            {neighbors
-              .map(
-                (neighbor) =>
-                  `${neighbor.node} (${neighbor.weight})`
-              )
-              .join(", ")}
-          </li>
-        ))}
+        {Object.entries(graph).map(
+          ([node, neighbors]) => (
+            <li key={node}>
+              {node} →{" "}
+              {neighbors
+                .map(
+                  (neighbor) =>
+                    `${neighbor.node} (${neighbor.weight})`
+                )
+                .join(", ")}
+            </li>
+          )
+        )}
       </ul>
     </>
   );

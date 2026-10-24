@@ -12,8 +12,8 @@ export const graph = {
 
   C: [
     { node: "A", weight: 2 },
-    { node: "F", weight: 4 },
-    { node: "D", weight: 3 }
+    { node: "D", weight: 3 },
+    { node: "F", weight: 4 }
   ],
 
   D: [
