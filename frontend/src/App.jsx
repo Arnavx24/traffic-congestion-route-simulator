@@ -4,37 +4,43 @@ import { bfs } from "./algorithms/bfs";
 import { dijkstra } from "./algorithms/dijkstra";
 import { applyTraffic } from "./utils/applyTraffic";
 
+const roads = Object.entries(graph).flatMap(([node, neighbors]) =>
+  neighbors
+    .filter((neighbor) => node < neighbor.node)
+    .map((neighbor) => ({
+      id: `${node}-${neighbor.node}`,
+      start: node,
+      end: neighbor.node
+    }))
+);
+
 function App() {
   const [source, setSource] = useState("A");
   const [destination, setDestination] = useState("D");
   const [route, setRoute] = useState([]);
   const [algorithm, setAlgorithm] = useState("BFS");
+  const [selectedRoadId, setSelectedRoadId] = useState(roads[0].id);
   const [traffic, setTraffic] = useState("Normal");
   const [cost, setCost] = useState(null);
 
-  const findRoute = () => {
-    const updatedGraph = applyTraffic(
-      graph,
-      traffic
-    );
+  const selectedRoad = roads.find((road) => road.id === selectedRoadId);
+  const updatedGraph = applyTraffic(
+    graph,
+    selectedRoad.start,
+    selectedRoad.end,
+    traffic
+  );
 
+  const findRoute = () => {
     if (algorithm === "BFS") {
-      const result = bfs(
-        updatedGraph,
-        source,
-        destination
-      );
+      const result = bfs(updatedGraph, source, destination);
 
       setRoute(result);
       setCost("Based on hop count");
     }
 
     if (algorithm === "Dijkstra") {
-      const result = dijkstra(
-        updatedGraph,
-        source,
-        destination
-      );
+      const result = dijkstra(updatedGraph, source, destination);
 
       setRoute(result.path);
       setCost(result.cost);
@@ -112,6 +118,26 @@ function App() {
       <br />
 
       <div>
+        <label>Road: </label>
+
+        <select
+          value={selectedRoadId}
+          onChange={(e) => setSelectedRoadId(e.target.value)}
+        >
+          {roads.map((road) => (
+            <option
+              key={road.id}
+              value={road.id}
+            >
+              {road.start} - {road.end}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <br />
+
+      <div>
         <label>Traffic Level: </label>
 
         <select
@@ -138,7 +164,7 @@ function App() {
       <p>{algorithm}</p>
 
       <h3>Traffic Condition</h3>
-      <p>{traffic}</p>
+      <p>{traffic} traffic on {selectedRoad.start} - {selectedRoad.end}</p>
 
       <h3>Source</h3>
       <p>{source}</p>
@@ -161,19 +187,23 @@ function App() {
       <h2>Road Connections</h2>
 
       <ul>
-        {Object.entries(graph).map(
-          ([node, neighbors]) => (
-            <li key={node}>
-              {node} →{" "}
-              {neighbors
-                .map(
-                  (neighbor) =>
-                    `${neighbor.node} (${neighbor.weight})`
-                )
-                .join(", ")}
+        {roads.map((road) => {
+          const baseWeight = graph[road.start].find(
+            (neighbor) => neighbor.node === road.end
+          ).weight;
+          const effectiveWeight = updatedGraph[road.start].find(
+            (neighbor) => neighbor.node === road.end
+          ).weight;
+
+          return (
+            <li key={road.id}>
+              {road.start} - {road.end}: {effectiveWeight}
+              {effectiveWeight !== baseWeight
+                ? ` (base: ${baseWeight})`
+                : ""}
             </li>
-          )
-        )}
+          );
+        })}
       </ul>
     </>
   );
